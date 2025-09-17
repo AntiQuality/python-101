@@ -1,0 +1,19 @@
+:root {
+  color-scheme: light;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  background-color: #f6f7fb;
+  color: #222;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}

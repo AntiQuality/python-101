@@ -30,3 +30,8 @@
 
 ## 授权信息
 项目开源协议尚未指定，贡献前请确认后续的 License 约定。
+
+## 开发运行
+- 后端：`cd backend && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`（启动前按 `backend/README.md` 安装依赖）。
+- 前端：`cd frontend && npm install && npm run dev`，默认监听 `http://127.0.0.1:5173`。
+- 环境变量：根目录创建 `.env`，包含 `ARK_API_KEY=...`。未配置时判题接口会返回本地模拟结果。

@@ -1,0 +1,6 @@
+{
+  "default_memory_limit_bytes": 8388608,
+  "python_version": "3.8",
+  "difficulties": ["基础", "进阶", "挑战"],
+  "question_types": ["判断题", "单选题", "编程题"]
+}

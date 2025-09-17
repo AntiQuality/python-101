@@ -1,0 +1,26 @@
+.progress {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e5e7f2;
+}
+
+.progress table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.progress th,
+.progress td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7f2;
+  text-align: left;
+}
+
+.progress th {
+  background: #f8f9fc;
+}
+
+.progress tr:last-child td {
+  border-bottom: none;
+}

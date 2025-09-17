@@ -1,1 +1,10 @@
+__pycache__/
+*.pyc
 .env
+venv/
+.venv/
+node_modules/
+data/
+frontend/node_modules/
+frontend/dist/
+!data/README.md

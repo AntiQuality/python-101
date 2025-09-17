@@ -1,0 +1,67 @@
+.tutorial {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 1.5rem;
+}
+
+.tutorial__sidebar {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid #e5e7f2;
+  max-height: 70vh;
+  overflow: auto;
+}
+
+.tutorial__sidebar h3 {
+  margin-top: 0;
+}
+
+.tutorial__sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tutorial__sidebar button {
+  width: 100%;
+  padding: 0.5rem;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  border-radius: 8px;
+}
+
+.tutorial__sidebar button.is-active {
+  background: rgba(123, 91, 255, 0.1);
+  color: #5636d3;
+  font-weight: 600;
+}
+
+.tutorial__order {
+  font-size: 0.85rem;
+  color: #868e96;
+}
+
+.tutorial__content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  border: 1px solid #e5e7f2;
+  min-height: 60vh;
+}
+
+.tutorial__content h2 {
+  margin-top: 0;
+}
+
+.tutorial__description {
+  background: #f1f3ff;
+  border-left: 3px solid #7b5bff;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+}

@@ -138,3 +138,10 @@
 - 彩炮动效的实现方案与性能测试。
 
 以上规范是后续实现与协作的主要依据，更新需求时需同步修订本文件。
+
+## 11. 项目结构与运行
+- 后端位于 `backend/`，使用 FastAPI 暴露 REST API，依赖列表见 `backend/requirements.txt`。
+- 前端位于 `frontend/`，使用 Vite + React + TypeScript 构建，与后端通过 `/auth`、`/content` 等接口交互。
+- 静态资源放在 `resources/`，示例章节与题目已提供（`resources/chapters/01-intro.md` 等），可作为后续扩展模板。
+- 本地数据写入 `data/`（忽略提交），初始包含说明文件 `data/README.md`。
+- 运行流程：先启动后端 `python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`，再运行前端 `npm run dev`。

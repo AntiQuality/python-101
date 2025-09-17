@@ -1,0 +1,80 @@
+.question-bank__controls {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  background: #fff;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e5e7f2;
+  margin-bottom: 1.5rem;
+}
+
+.question-bank__controls label {
+  font-weight: 600;
+  margin-right: 0.4rem;
+}
+
+.question-bank__controls select {
+  padding: 0.4rem;
+  border-radius: 6px;
+  border: 1px solid #c6c9dd;
+}
+
+.question-bank__summary {
+  margin-left: auto;
+  color: #6c757d;
+}
+
+.question-bank__list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.question-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7f2;
+  padding: 1.2rem 1.5rem;
+  box-shadow: 0 12px 24px -24px rgba(123, 91, 255, 0.6);
+}
+
+.question-card header h3 {
+  margin-top: 0;
+}
+
+.question-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.question-card__details {
+  margin-top: 1rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.question-card__prompt {
+  background: #f6f7fb;
+  padding: 1rem;
+  border-radius: 8px;
+  white-space: pre-wrap;
+}
+
+.question-card footer {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.question-card button {
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  background: #7b5bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
