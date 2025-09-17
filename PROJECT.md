@@ -23,6 +23,40 @@
   - 必须包含题目正文、所属章节、难度标签、默认内存限制（8MB，可覆盖）、是否可在教程/题库中出现。
   - 讲解需包含：正确答案/示例解法、常见错误、进阶拓展（如适用）。
 - **存储规范**：所有教程内容和习题以 Markdown/结构化文件存放在 `resources/` 下，需定义可维护的子目录命名（例如 `resources/chapters/<chapter-slug>.md` 与 `resources/questions/<chapter>/<question-slug>.md`）。
+  - **章节文件示例**（`resources/chapters/01-intro.md`）：
+    ```markdown
+    ---
+    slug: intro
+    title: 变量与数据类型
+    order: 1
+    ---
+    # 变量与数据类型
+    章节内容正文...
+    ```
+  - **题目文件示例**（`resources/questions/intro/q1-variable.md`）：
+    ```markdown
+    ---
+    slug: q1-variable
+    chapter: intro
+    difficulty: 基础
+    type: 单选题
+    memory_limit: 8MB
+    show_in_tutorial: true
+    show_in_bank: true
+    ---
+    ## 题目正文
+    小明想保存自己的年龄，应该使用哪种数据类型？
+    - A. str
+    - B. int
+    - C. list
+    - D. bool
+
+    ### 正确答案
+    B
+
+    ### 解析
+    - 常见错误：选 A，字符串不能直接用于数值运算。
+    - 进阶拓展：int 可用于数学计算，适合年龄等整数数据。
 
 ## 4. 在线编程与判题
 - **Python 版本**：锁定为 3.8。
