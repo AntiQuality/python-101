@@ -1,6 +1,4 @@
-# Python-101
-
-> npy开心，做什么事都会变顺 🥰
+# Python-101 SPECIFICATION
 
 ## 1. 项目概览
 - **项目名称**：Python学习题库（交互式入门教程）
