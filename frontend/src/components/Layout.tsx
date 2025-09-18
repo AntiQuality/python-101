@@ -18,7 +18,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <NavLink to="/tutorial">教程</NavLink>
         <NavLink to="/questions">题库</NavLink>
         <NavLink to="/progress">学习记录</NavLink>
-        <NavLink to="/admin">后台</NavLink>
+        {user?.is_admin && <NavLink to="/admin">后台</NavLink>}
         {user ? <span className="layout__user">👋 {user.username}</span> : <NavLink to="/login">登录</NavLink>}
       </nav>
       <main className="layout__content">{children}</main>

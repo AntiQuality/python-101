@@ -18,6 +18,7 @@ class ProgressOut(BaseModel):
 
 class UserOut(BaseModel):
     username: str
+    is_admin: bool
     devices: List[DeviceOut]
     progress: List[ProgressOut]
 

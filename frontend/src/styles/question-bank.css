@@ -32,11 +32,13 @@
 }
 
 .question-card {
+  position: relative;
   background: #fff;
   border-radius: 12px;
   border: 1px solid #e5e7f2;
   padding: 1.2rem 1.5rem;
   box-shadow: 0 12px 24px -24px rgba(123, 91, 255, 0.6);
+  overflow: hidden;
 }
 
 .question-card header h3 {

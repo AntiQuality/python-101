@@ -14,6 +14,7 @@ import type {
   User,
 } from "../services/api";
 import "../styles/admin.css";
+import { useAuth } from "../contexts/AuthContext";
 
 const defaultChapterForm: ChapterUpsertPayload = {
   slug: "",
@@ -39,6 +40,7 @@ const defaultQuestionForm: QuestionUpsertPayload = {
 };
 
 const AdminDashboard: React.FC = () => {
+  const { user } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -52,6 +54,9 @@ const AdminDashboard: React.FC = () => {
   const chapterSlugOptions = useMemo(() => chapters.map((item) => item.slug), [chapters]);
 
   useEffect(() => {
+    if (!user?.is_admin) {
+      return;
+    }
     Promise.all([adminListUsers(), adminListQuestions(), listChapters()])
       .then(([usersRes, questionRes, chapterRes]) => {
         setUsers(usersRes.data);
@@ -59,7 +64,7 @@ const AdminDashboard: React.FC = () => {
         setChapters(chapterRes.data);
       })
       .catch((err) => setError(err.message));
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (!chapterForm.slug && chapters.length > 0) {
@@ -71,6 +76,9 @@ const AdminDashboard: React.FC = () => {
   }, [chapters]);
 
   const refreshQuestions = async () => {
+    if (!user?.is_admin) {
+      return;
+    }
     const [questionRes, chapterRes] = await Promise.all([adminListQuestions(), listChapters()]);
     setQuestions(questionRes.data);
     setChapters(chapterRes.data);
@@ -123,6 +131,10 @@ const AdminDashboard: React.FC = () => {
       setSubmitting(false);
     }
   };
+
+  if (!user?.is_admin) {
+    return <p>抱歉，只有管理员可以访问该页面。</p>;
+  }
 
   if (error) {
     return <p>后台数据加载失败：{error}</p>;

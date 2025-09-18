@@ -50,6 +50,7 @@ class DeviceInfo(BaseModel):
 class UserAccount(BaseModel):
     username: str
     password: str  # 明文，后续可替换为哈希
+    is_admin: bool = False
     devices: List[DeviceInfo] = Field(default_factory=list)
     progress: List[ProgressEntry] = Field(default_factory=list)
 

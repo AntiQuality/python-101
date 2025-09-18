@@ -21,8 +21,8 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 def _to_user_out(account) -> UserOut:
     return UserOut(
         username=account.username,
-        devices=[
-            DeviceOut(name=device.name, browser=device.browser, last_login=device.last_login)
+        is_admin=account.is_admin,
+        devices=[            DeviceOut(name=device.name, browser=device.browser, last_login=device.last_login)
             for device in account.devices
         ],
         progress=[

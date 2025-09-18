@@ -19,6 +19,7 @@ export interface ProgressEntry {
 
 export interface User {
   username: string;
+  is_admin: boolean;
   devices: Device[];
   progress: ProgressEntry[];
 }

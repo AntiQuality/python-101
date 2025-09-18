@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import {
   executeCode,
@@ -7,6 +7,7 @@ import {
   listQuestions,
   recordProgress,
 } from "../services/api";
+import Confetti from "../components/Confetti";
 import type {
   Chapter,
   ExecutionResult,
@@ -61,6 +62,8 @@ const QuestionBank: React.FC = () => {
   const [selectedOption, setSelectedOption] = useState<Record<string, string>>({});
   const [answerState, setAnswerState] = useState<Record<string, "correct" | "incorrect" | null>>({});
   const [messageState, setMessageState] = useState<Record<string, string | null>>({});
+  const [celebrationMap, setCelebrationMap] = useState<Record<string, boolean>>({});
+  const celebrationTimers = useRef<Record<string, number>>({});
 
   useEffect(() => {
     listChapters().then((res) => setChapters(res.data));
@@ -78,6 +81,23 @@ const QuestionBank: React.FC = () => {
     const chapter = chapters.find((item) => item.slug === selectedChapter);
     return chapter ? chapter.title : selectedChapter;
   }, [chapters, selectedChapter]);
+
+  useEffect(() => {
+    return () => {
+      Object.values(celebrationTimers.current).forEach((timer) => window.clearTimeout(timer));
+    };
+  }, []);
+
+  const triggerCelebration = (slug: string) => {
+    setCelebrationMap((prev) => ({ ...prev, [slug]: true }));
+    if (celebrationTimers.current[slug]) {
+      window.clearTimeout(celebrationTimers.current[slug]);
+    }
+    celebrationTimers.current[slug] = window.setTimeout(() => {
+      setCelebrationMap((prev) => ({ ...prev, [slug]: false }));
+      delete celebrationTimers.current[slug];
+    }, 3000);
+  };
 
   const updateRunState = (slug: string, data: Partial<RunState>) => {
     setRunStates((prev) => ({
@@ -141,6 +161,7 @@ const QuestionBank: React.FC = () => {
         setUser(progressRes.data.user);
         setAnswerState((prev) => ({ ...prev, [question.slug]: "correct" }));
         setMessageState((prev) => ({ ...prev, [question.slug]: "判题通过，已记录进度。" }));
+        triggerCelebration(question.slug);
       }
     } catch (error: any) {
       const detail = error?.response?.data?.detail || error.message;
@@ -163,6 +184,10 @@ const QuestionBank: React.FC = () => {
       ...prev,
       [question.slug]: isCorrect ? "回答正确！" : "回答错误，再试试看。",
     }));
+
+    if (isCorrect) {
+      triggerCelebration(question.slug);
+    }
 
     if (isCorrect && user) {
       try {
@@ -278,6 +303,7 @@ const QuestionBank: React.FC = () => {
           const judgeState = judgeStates[question.slug] ?? defaultJudgeState;
           return (
             <article key={question.slug} className="question-card">
+              <Confetti active={celebrationMap[question.slug] ?? false} />
               <header>
                 <h3>{question.prompt.split("\n")[0]}</h3>
                 <div className="question-card__meta">

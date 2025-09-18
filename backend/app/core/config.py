@@ -4,8 +4,9 @@ from pydantic import BaseModel
 
 class Settings(BaseModel):
     project_name: str = "Python-101"
-    resources_dir: Path = Path(__file__).resolve().parents[2] / "resources"
-    data_dir: Path = Path(__file__).resolve().parents[2] / "data"
+    base_dir: Path = Path(__file__).resolve().parents[3]
+    resources_dir: Path = base_dir / "resources"
+    data_dir: Path = base_dir / "data"
     chapters_dirname: str = "chapters"
     questions_dirname: str = "questions"
     config_dirname: str = "config"
@@ -19,3 +20,4 @@ class Settings(BaseModel):
 
 settings = Settings()
 settings.data_dir.mkdir(parents=True, exist_ok=True)
+settings.resources_dir.mkdir(parents=True, exist_ok=True)
