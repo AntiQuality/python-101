@@ -14,7 +14,7 @@ const App: React.FC = () => (
     <Layout>
       <Routes>
         <Route path="/" element={<Welcome />} />
-        <Route path="/tutorial" element={<Tutorial />} />
+        <Route path="/tutorial/:slug?" element={<Tutorial />} />
         <Route path="/questions" element={<QuestionBank />} />
         <Route path="/progress" element={<Progress />} />
         <Route path="/admin" element={<AdminDashboard />} />

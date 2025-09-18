@@ -47,6 +47,45 @@ export interface Question {
   advanced_insights?: string | null;
 }
 
+export interface QuestionOut {
+  slug: string;
+  chapter: string;
+  difficulty: string;
+  type: string;
+  memory_limit?: number | null;
+  show_in_tutorial: boolean;
+  show_in_bank: boolean;
+  prompt: string;
+  answer?: string | null;
+  explanation?: string | null;
+  common_mistakes?: string | null;
+  advanced_insights?: string | null;
+}
+
+export interface ChapterUpsertPayload {
+  slug: string;
+  title: string;
+  order: number;
+  description?: string | null;
+  body: string;
+}
+
+export interface QuestionUpsertPayload {
+  slug: string;
+  chapter: string;
+  difficulty: string;
+  type: string;
+  memory_limit?: number | null;
+  show_in_tutorial?: boolean;
+  show_in_bank?: boolean;
+  prompt: string;
+  answer?: string | null;
+  explanation?: string | null;
+  common_mistakes?: string | null;
+  advanced_insights?: string | null;
+}
+
+
 export interface JudgeResult {
   passed: boolean;
   feedback_steps: string[];

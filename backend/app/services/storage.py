@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict
 
@@ -20,4 +21,13 @@ class JSONStorage:
         return json.loads(data)
 
     def write(self, data: Dict[str, Any]) -> None:
-        self._path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        self._path.write_text(
+            json.dumps(data, ensure_ascii=False, indent=2, default=self._default),
+            encoding="utf-8",
+        )
+
+    @staticmethod
+    def _default(value: Any) -> Any:
+        if isinstance(value, datetime):
+            return value.isoformat()
+        raise TypeError(f"Object of type {type(value)!r} is not JSON serializable")

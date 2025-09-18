@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { useSearchParams } from "react-router-dom";
+import Confetti from "../components/Confetti";
 import {
   executeCode,
   judgeAnswer,
@@ -7,17 +9,19 @@ import {
   listQuestions,
   recordProgress,
 } from "../services/api";
-import Confetti from "../components/Confetti";
-import type {
-  Chapter,
-  ExecutionResult,
-  Question,
-} from "../services/api";
+import type { Chapter, ExecutionResult, Question } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 import "../styles/question-bank.css";
 
-const difficulties = ["基础", "进阶", "挑战"];
 const SYSTEM_PROMPT = `你是一名耐心的 Python 新手导师，需要根据题目要求判断学习者提交的代码是否完全满足题意。请逐步指出：\n1. 代码是否满足功能需求；\n2. 若不满足，请列出问题，并给出修改建议；\n3. 若满足，说明通过原因。\n请使用中文分步说明。`;
+
+const difficultyBadges: Record<string, string> = {
+  基础: "difficulty-badge difficulty-badge--easy",
+  进阶: "difficulty-badge difficulty-badge--medium",
+  挑战: "difficulty-badge difficulty-badge--hard",
+};
+
+const difficultyOrder = ["基础", "进阶", "挑战"] as const;
 
 type RunState = {
   loading: boolean;
@@ -47,12 +51,23 @@ const extractOptions = (prompt: string) => {
     .filter((item): item is { key: string; label: string } => Boolean(item));
 };
 
+const deriveTitle = (question: Question) => {
+  const lines = question.prompt.split("\n");
+  const candidate = lines.find((line) => {
+    const trimmed = line.trim();
+    return trimmed && !trimmed.startsWith("#");
+  });
+  if (!candidate) return question.slug;
+  return candidate.replace(/^[-*0-9.\s]+/, "").slice(0, 50);
+};
+
 const QuestionBank: React.FC = () => {
   const { user, setUser } = useAuth();
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [selectedChapter, setSelectedChapter] = useState<string>("");
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string>("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedChapter, setSelectedChapter] = useState<string>(searchParams.get("chapter") || "");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>(searchParams.get("difficulty") || "");
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const [codeMap, setCodeMap] = useState<Record<string, string>>({});
@@ -76,16 +91,31 @@ const QuestionBank: React.FC = () => {
     }).then((res) => setQuestions(res.data));
   }, [selectedChapter, selectedDifficulty]);
 
-  const activeChapterTitle = useMemo(() => {
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (selectedChapter) params.set("chapter", selectedChapter);
+    if (selectedDifficulty) params.set("difficulty", selectedDifficulty);
+    if (params.toString() !== searchParams.toString()) {
+      setSearchParams(params, { replace: true });
+    }
+  }, [selectedChapter, selectedDifficulty, searchParams, setSearchParams]);
+
+  
+  useEffect(() => {
+    const chapterParam = searchParams.get("chapter") || "";
+    const difficultyParam = searchParams.get("difficulty") || "";
+    setSelectedChapter((prev) => (prev === chapterParam ? prev : chapterParam));
+    setSelectedDifficulty((prev) => (prev === difficultyParam ? prev : difficultyParam));
+  }, [searchParams]);
+
+const activeChapterTitle = useMemo(() => {
     if (!selectedChapter) return "全部章节";
     const chapter = chapters.find((item) => item.slug === selectedChapter);
     return chapter ? chapter.title : selectedChapter;
   }, [chapters, selectedChapter]);
 
-  useEffect(() => {
-    return () => {
-      Object.values(celebrationTimers.current).forEach((timer) => window.clearTimeout(timer));
-    };
+  useEffect(() => () => {
+    Object.values(celebrationTimers.current).forEach((timer) => window.clearTimeout(timer));
   }, []);
 
   const triggerCelebration = (slug: string) => {
@@ -258,6 +288,8 @@ const QuestionBank: React.FC = () => {
     return null;
   };
 
+  const sortedChapters = useMemo(() => [...chapters].sort((a, b) => a.order - b.order), [chapters]);
+
   return (
     <section>
       <header className="question-bank__controls">
@@ -269,7 +301,7 @@ const QuestionBank: React.FC = () => {
             onChange={(event) => setSelectedChapter(event.target.value)}
           >
             <option value="">全部章节</option>
-            {chapters.map((chapter) => (
+            {sortedChapters.map((chapter) => (
               <option key={chapter.slug} value={chapter.slug}>
                 {chapter.title}
               </option>
@@ -284,7 +316,7 @@ const QuestionBank: React.FC = () => {
             onChange={(event) => setSelectedDifficulty(event.target.value)}
           >
             <option value="">全部</option>
-            {difficulties.map((level) => (
+            {difficultyOrder.map((level) => (
               <option key={level} value={level}>
                 {level}
               </option>
@@ -301,15 +333,19 @@ const QuestionBank: React.FC = () => {
           const isExpanded = expanded === question.slug;
           const runState = runStates[question.slug] ?? defaultRunState;
           const judgeState = judgeStates[question.slug] ?? defaultJudgeState;
+          const title = deriveTitle(question);
+          const badgeClass = difficultyBadges[question.difficulty] || "difficulty-badge";
           return (
             <article key={question.slug} className="question-card">
               <Confetti active={celebrationMap[question.slug] ?? false} />
               <header>
-                <h3>{question.prompt.split("\n")[0]}</h3>
+                <div className="question-card__heading">
+                  <h3>{title}</h3>
+                  <span className={badgeClass}>{question.difficulty}</span>
+                </div>
                 <div className="question-card__meta">
                   <span>章节：{question.chapter}</span>
-                  <span>难度：{question.difficulty}</span>
-                  <span>类型：{question.type}</span>
+                  <span>题型：{question.type}</span>
                   {question.memory_limit && <span>内存：{Math.round(question.memory_limit / (1024 * 1024))}MB</span>}
                 </div>
               </header>
@@ -390,11 +426,7 @@ const QuestionBank: React.FC = () => {
                       {judgeState.feedback.length > 0 && (
                         <div className={`judge-feedback ${judgeState.passed ? "judge-feedback--pass" : ""}`}>
                           <strong>判题反馈：</strong>
-                          <ul>
-                            {judgeState.feedback.map((line, index) => (
-                              <li key={index}>{line}</li>
-                            ))}
-                          </ul>
+                          <ReactMarkdown>{judgeState.feedback.join("\n")}</ReactMarkdown>
                         </div>
                       )}
                     </div>
