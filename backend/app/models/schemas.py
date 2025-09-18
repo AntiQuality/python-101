@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import List
+
 from pydantic import BaseModel
 
 
@@ -59,6 +60,20 @@ class JudgeResponse(BaseModel):
     feedback_steps: List[str]
 
 
+class ExecutionRequest(BaseModel):
+    code: str
+    stdin: str | None = None
+    time_limit: float | None = None
+    memory_limit: int | None = None
+
+
+class ExecutionResult(BaseModel):
+    success: bool
+    stdout: str
+    stderr: str
+    error: str | None = None
+
+
 class ChapterOut(BaseModel):
     slug: str
     title: str
@@ -75,6 +90,29 @@ class QuestionOut(BaseModel):
     memory_limit: int | None = None
     show_in_tutorial: bool
     show_in_bank: bool
+    prompt: str
+    answer: str | None = None
+    explanation: str | None = None
+    common_mistakes: str | None = None
+    advanced_insights: str | None = None
+
+
+class ChapterUpsertRequest(BaseModel):
+    slug: str
+    title: str
+    order: int
+    description: str | None = None
+    body: str
+
+
+class QuestionUpsertRequest(BaseModel):
+    slug: str
+    chapter: str
+    difficulty: str
+    type: str
+    memory_limit: int | None = None
+    show_in_tutorial: bool = True
+    show_in_bank: bool = True
     prompt: str
     answer: str | None = None
     explanation: str | None = None

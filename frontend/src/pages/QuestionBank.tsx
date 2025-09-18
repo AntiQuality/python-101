@@ -1,16 +1,66 @@
 import React, { useEffect, useMemo, useState } from "react";
-import type { Chapter, Question } from "../services/api";
-import { listChapters, listQuestions } from "../services/api";
+import ReactMarkdown from "react-markdown";
+import {
+  executeCode,
+  judgeAnswer,
+  listChapters,
+  listQuestions,
+  recordProgress,
+} from "../services/api";
+import type {
+  Chapter,
+  ExecutionResult,
+  Question,
+} from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 import "../styles/question-bank.css";
 
 const difficulties = ["基础", "进阶", "挑战"];
+const SYSTEM_PROMPT = `你是一名耐心的 Python 新手导师，需要根据题目要求判断学习者提交的代码是否完全满足题意。请逐步指出：\n1. 代码是否满足功能需求；\n2. 若不满足，请列出问题，并给出修改建议；\n3. 若满足，说明通过原因。\n请使用中文分步说明。`;
+
+type RunState = {
+  loading: boolean;
+  result: ExecutionResult | null;
+  error: string | null;
+};
+
+type JudgeState = {
+  loading: boolean;
+  feedback: string[];
+  passed: boolean | null;
+  error: string | null;
+};
+
+const defaultRunState: RunState = { loading: false, result: null, error: null };
+const defaultJudgeState: JudgeState = { loading: false, feedback: [], passed: null, error: null };
+
+const extractOptions = (prompt: string) => {
+  const regex = /^-\s*([A-Z])\.\s*(.+)$/i;
+  return prompt
+    .split("\n")
+    .map((line) => {
+      const match = line.match(regex);
+      if (!match) return null;
+      return { key: match[1].toUpperCase(), label: match[2].trim() };
+    })
+    .filter((item): item is { key: string; label: string } => Boolean(item));
+};
 
 const QuestionBank: React.FC = () => {
+  const { user, setUser } = useAuth();
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [selectedChapter, setSelectedChapter] = useState<string>("");
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("");
   const [expanded, setExpanded] = useState<string | null>(null);
+
+  const [codeMap, setCodeMap] = useState<Record<string, string>>({});
+  const [stdinMap, setStdinMap] = useState<Record<string, string>>({});
+  const [runStates, setRunStates] = useState<Record<string, RunState>>({});
+  const [judgeStates, setJudgeStates] = useState<Record<string, JudgeState>>({});
+  const [selectedOption, setSelectedOption] = useState<Record<string, string>>({});
+  const [answerState, setAnswerState] = useState<Record<string, "correct" | "incorrect" | null>>({});
+  const [messageState, setMessageState] = useState<Record<string, string | null>>({});
 
   useEffect(() => {
     listChapters().then((res) => setChapters(res.data));
@@ -28,6 +78,160 @@ const QuestionBank: React.FC = () => {
     const chapter = chapters.find((item) => item.slug === selectedChapter);
     return chapter ? chapter.title : selectedChapter;
   }, [chapters, selectedChapter]);
+
+  const updateRunState = (slug: string, data: Partial<RunState>) => {
+    setRunStates((prev) => ({
+      ...prev,
+      [slug]: { ...defaultRunState, ...(prev[slug] ?? {}), ...data },
+    }));
+  };
+
+  const updateJudgeState = (slug: string, data: Partial<JudgeState>) => {
+    setJudgeStates((prev) => ({
+      ...prev,
+      [slug]: { ...defaultJudgeState, ...(prev[slug] ?? {}), ...data },
+    }));
+  };
+
+  const handleRun = async (question: Question) => {
+    const code = codeMap[question.slug] ?? "";
+    updateRunState(question.slug, { loading: true, error: null });
+    try {
+      const response = await executeCode({
+        code,
+        stdin: stdinMap[question.slug] ?? undefined,
+        memory_limit: question.memory_limit ?? undefined,
+      });
+      updateRunState(question.slug, { loading: false, result: response.data });
+      setMessageState((prev) => ({ ...prev, [question.slug]: null }));
+    } catch (error: any) {
+      const detail = error?.response?.data?.detail || error.message;
+      updateRunState(question.slug, { loading: false, error: detail, result: null });
+    }
+  };
+
+  const handleJudge = async (question: Question) => {
+    if (!user) {
+      setMessageState((prev) => ({ ...prev, [question.slug]: "请先登录再提交评测。" }));
+      return;
+    }
+    const code = codeMap[question.slug] ?? "";
+    if (!code.trim()) {
+      setMessageState((prev) => ({ ...prev, [question.slug]: "请先编写代码。" }));
+      return;
+    }
+
+    updateJudgeState(question.slug, { loading: true, error: null, feedback: [], passed: null });
+    try {
+      const payload = {
+        question: question.prompt,
+        reference: question.answer ?? "",
+        user_code: code,
+      };
+      const response = await judgeAnswer(SYSTEM_PROMPT, JSON.stringify(payload));
+      const { passed, feedback_steps } = response.data;
+      updateJudgeState(question.slug, {
+        loading: false,
+        feedback: feedback_steps,
+        passed,
+      });
+
+      if (passed) {
+        const progressRes = await recordProgress(user.username, question.slug, 1);
+        setUser(progressRes.data.user);
+        setAnswerState((prev) => ({ ...prev, [question.slug]: "correct" }));
+        setMessageState((prev) => ({ ...prev, [question.slug]: "判题通过，已记录进度。" }));
+      }
+    } catch (error: any) {
+      const detail = error?.response?.data?.detail || error.message;
+      updateJudgeState(question.slug, { loading: false, error: detail });
+    }
+  };
+
+  const handleCheckObjective = async (question: Question) => {
+    const selected = selectedOption[question.slug];
+    if (!selected) {
+      setMessageState((prev) => ({ ...prev, [question.slug]: "请先选择一个选项。" }));
+      return;
+    }
+
+    const correctAnswer = (question.answer || "").trim();
+    const normalized = question.type === "单选题" ? selected.toUpperCase() : selected;
+    const isCorrect = normalized === correctAnswer;
+    setAnswerState((prev) => ({ ...prev, [question.slug]: isCorrect ? "correct" : "incorrect" }));
+    setMessageState((prev) => ({
+      ...prev,
+      [question.slug]: isCorrect ? "回答正确！" : "回答错误，再试试看。",
+    }));
+
+    if (isCorrect && user) {
+      try {
+        const progressRes = await recordProgress(user.username, question.slug, 1);
+        setUser(progressRes.data.user);
+      } catch (error: any) {
+        const detail = error?.response?.data?.detail || error.message;
+        setMessageState((prev) => ({ ...prev, [question.slug]: `答案正确，但进度保存失败：${detail}` }));
+      }
+    }
+  };
+
+  const renderObjectiveControls = (question: Question) => {
+    if (question.type === "单选题") {
+      const options = extractOptions(question.prompt);
+      return (
+        <div className="question-card__objective">
+          {options.map((option) => (
+            <label key={option.key} className="question-card__option">
+              <input
+                type="radio"
+                name={`choice-${question.slug}`}
+                value={option.key}
+                checked={selectedOption[question.slug] === option.key}
+                onChange={(event) =>
+                  setSelectedOption((prev) => ({
+                    ...prev,
+                    [question.slug]: event.target.value,
+                  }))
+                }
+              />
+              <span>
+                {option.key}. {option.label}
+              </span>
+            </label>
+          ))}
+          <button type="button" onClick={() => handleCheckObjective(question)}>检查答案</button>
+        </div>
+      );
+    }
+
+    if (question.type === "判断题") {
+      const options = ["正确", "错误"];
+      return (
+        <div className="question-card__objective">
+          {options.map((value) => (
+            <label key={value} className="question-card__option">
+              <input
+                type="radio"
+                name={`judge-${question.slug}`}
+                value={value}
+                checked={selectedOption[question.slug] === value}
+                onChange={(event) =>
+                  setSelectedOption((prev) => ({
+                    ...prev,
+                    [question.slug]: event.target.value,
+                  }))
+                }
+              />
+              <span>{value}</span>
+            </label>
+          ))}
+          <button type="button" onClick={() => handleCheckObjective(question)}>检查答案</button>
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <section>
@@ -70,6 +274,8 @@ const QuestionBank: React.FC = () => {
       <div className="question-bank__list">
         {questions.map((question) => {
           const isExpanded = expanded === question.slug;
+          const runState = runStates[question.slug] ?? defaultRunState;
+          const judgeState = judgeStates[question.slug] ?? defaultJudgeState;
           return (
             <article key={question.slug} className="question-card">
               <header>
@@ -83,24 +289,125 @@ const QuestionBank: React.FC = () => {
               </header>
               {isExpanded && (
                 <div className="question-card__details">
-                  <pre className="question-card__prompt">{question.prompt}</pre>
+                  <div className="question-card__prompt">
+                    <ReactMarkdown>{question.prompt}</ReactMarkdown>
+                  </div>
+
+                  {renderObjectiveControls(question)}
+
+                  {question.type === "编程题" && (
+                    <div className="question-card__coding">
+                      <label className="question-card__label" htmlFor={`code-${question.slug}`}>
+                        代码编辑
+                      </label>
+                      <textarea
+                        id={`code-${question.slug}`}
+                        value={codeMap[question.slug] ?? ""}
+                        onChange={(event) =>
+                          setCodeMap((prev) => ({
+                            ...prev,
+                            [question.slug]: event.target.value,
+                          }))
+                        }
+                        placeholder="在此编写你的代码..."
+                      />
+                      <label className="question-card__label" htmlFor={`stdin-${question.slug}`}>
+                        模拟输入（可选，每行代表一行输入）
+                      </label>
+                      <textarea
+                        id={`stdin-${question.slug}`}
+                        value={stdinMap[question.slug] ?? ""}
+                        onChange={(event) =>
+                          setStdinMap((prev) => ({
+                            ...prev,
+                            [question.slug]: event.target.value,
+                          }))
+                        }
+                        placeholder="如需模拟用户输入，在此填写。"
+                        className="question-card__stdin"
+                      />
+                      <div className="question-card__actions">
+                        <button
+                          type="button"
+                          onClick={() => handleRun(question)}
+                          disabled={runState.loading}
+                        >
+                          {runState.loading ? "运行中..." : "运行代码"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleJudge(question)}
+                          disabled={judgeState.loading}
+                        >
+                          {judgeState.loading ? "判题中..." : "提交判题"}
+                        </button>
+                      </div>
+                      <div className="question-card__console">
+                        {runState.error && <p className="error">运行失败：{runState.error}</p>}
+                        {runState.result && (
+                          <div>
+                            <p><strong>程序输出：</strong></p>
+                            <pre>{runState.result.stdout || "(无输出)"}</pre>
+                            {runState.result.stderr && (
+                              <div>
+                                <p><strong>错误输出：</strong></p>
+                                <pre>{runState.result.stderr}</pre>
+                              </div>
+                            )}
+                            {runState.result.error && (
+                              <p className="error">{runState.result.error}</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      {judgeState.error && <p className="error">判题失败：{judgeState.error}</p>}
+                      {judgeState.feedback.length > 0 && (
+                        <div className={`judge-feedback ${judgeState.passed ? "judge-feedback--pass" : ""}`}>
+                          <strong>判题反馈：</strong>
+                          <ul>
+                            {judgeState.feedback.map((line, index) => (
+                              <li key={index}>{line}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {question.explanation && (
                     <section>
                       <h4>解析</h4>
-                      <p>{question.explanation}</p>
+                      <ReactMarkdown>{question.explanation}</ReactMarkdown>
                     </section>
                   )}
                   {question.common_mistakes && (
                     <section>
                       <h4>常见错误</h4>
-                      <p>{question.common_mistakes}</p>
+                      <ReactMarkdown>{question.common_mistakes}</ReactMarkdown>
                     </section>
                   )}
                   {question.advanced_insights && (
                     <section>
                       <h4>进阶拓展</h4>
-                      <p>{question.advanced_insights}</p>
+                      <ReactMarkdown>{question.advanced_insights}</ReactMarkdown>
                     </section>
+                  )}
+
+                  {answerState[question.slug] && question.answer && (
+                    <div
+                      className={`question-card__answer ${
+                        answerState[question.slug] === "correct" ? "is-correct" : "is-wrong"
+                      }`}
+                    >
+                      <p>
+                        正确答案：
+                        <pre>{question.answer}</pre>
+                      </p>
+                    </div>
+                  )}
+
+                  {messageState[question.slug] && (
+                    <p className="question-card__message">{messageState[question.slug]}</p>
                   )}
                 </div>
               )}

@@ -51,6 +51,20 @@ export interface JudgeResult {
   feedback_steps: string[];
 }
 
+export interface ExecutionPayload {
+  code: string;
+  stdin?: string | null;
+  time_limit?: number | null;
+  memory_limit?: number | null;
+}
+
+export interface ExecutionResult {
+  success: boolean;
+  stdout: string;
+  stderr: string;
+  error?: string | null;
+}
+
 export const register = (username: string, password: string) =>
   client.post<{ user: User }>("/auth/register", { username, password });
 
@@ -87,5 +101,12 @@ export const recordProgress = (username: string, question_slug: string, score: n
 export const judgeAnswer = (system_prompt: string, prompt: string) =>
   client.post<JudgeResult>("/judge/evaluate", { system_prompt, prompt });
 
+export const executeCode = (payload: ExecutionPayload) =>
+  client.post<ExecutionResult>("/execute/run", payload);
+
 export const adminListUsers = () => client.get<User[]>("/admin/users");
 export const adminListQuestions = () => client.get<Question[]>("/admin/questions");
+export const adminUpsertChapter = (payload: ChapterUpsertPayload) =>
+  client.post<Chapter>("/admin/chapters", payload);
+export const adminUpsertQuestion = (payload: QuestionUpsertPayload) =>
+  client.post<Question>("/admin/questions", payload);

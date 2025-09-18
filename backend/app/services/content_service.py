@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Dict, List, Optional
 
+import yaml
+
 from ..core.config import settings
 from ..models.content import Chapter, ChapterMetadata, Question, QuestionMetadata
 from ..utils.frontmatter import parse
@@ -46,6 +48,80 @@ class ContentService:
     def get_question(self, slug: str) -> Optional[Question]:
         self._ensure_questions_loaded()
         return self._questions_cache.get(slug)
+
+    def upsert_chapter(
+        self,
+        *,
+        slug: str,
+        title: str,
+        order: int,
+        description: Optional[str],
+        body: str,
+    ) -> Chapter:
+        chapters_dir = self._resources_dir / settings.chapters_dirname
+        chapters_dir.mkdir(parents=True, exist_ok=True)
+        path = self._find_chapter_path(slug) or chapters_dir / f"{order:02d}-{slug}.md"
+        meta: Dict[str, object] = {
+            "slug": slug,
+            "title": title,
+            "order": order,
+        }
+        if description:
+            meta["description"] = description
+        self._write_markdown(path, meta, body)
+        self._reset_cache()
+        chapter = self.get_chapter(slug)
+        if not chapter:
+            raise RuntimeError("章节保存失败")
+        return chapter
+
+    def upsert_question(
+        self,
+        *,
+        slug: str,
+        chapter: str,
+        difficulty: str,
+        qtype: str,
+        memory_limit: Optional[int],
+        show_in_tutorial: bool,
+        show_in_bank: bool,
+        prompt: str,
+        answer: Optional[str],
+        explanation: Optional[str],
+        common_mistakes: Optional[str],
+        advanced_insights: Optional[str],
+    ) -> Question:
+        questions_dir = self._resources_dir / settings.questions_dirname / chapter
+        questions_dir.mkdir(parents=True, exist_ok=True)
+        path = self._find_question_path(chapter, slug) or questions_dir / f"{slug}.md"
+        meta: Dict[str, object] = {
+            "slug": slug,
+            "chapter": chapter,
+            "difficulty": difficulty,
+            "type": qtype,
+            "show_in_tutorial": show_in_tutorial,
+            "show_in_bank": show_in_bank,
+        }
+        if memory_limit:
+            meta["memory_limit"] = self._format_memory(memory_limit)
+
+        sections: List[str] = [f"## 题目正文\n{prompt.strip()}"]
+        if answer:
+            sections.append(f"### 正确答案\n{answer.strip()}")
+        if explanation:
+            sections.append(f"### 解析\n{explanation.strip()}")
+        if common_mistakes:
+            sections.append(f"### 常见错误\n{common_mistakes.strip()}")
+        if advanced_insights:
+            sections.append(f"### 进阶拓展\n{advanced_insights.strip()}")
+        body = "\n\n".join(section.strip() for section in sections if section).strip()
+
+        self._write_markdown(path, meta, body)
+        self._reset_cache()
+        question = self.get_question(slug)
+        if not question:
+            raise RuntimeError("题目保存失败")
+        return question
 
     # Internal helpers ----------------------------------------------------
     def _ensure_chapters_loaded(self) -> None:
@@ -147,6 +223,45 @@ class ContentService:
         if collected_lines:
             sections[current_key] = "\n".join(collected_lines).strip()
         return sections
+
+    def _write_markdown(self, path: Path, meta: Dict[str, object], body: str) -> None:
+        meta_dump = yaml.safe_dump(meta, allow_unicode=True, sort_keys=False).strip()
+        content = f"---\n{meta_dump}\n---\n\n{body.strip()}\n"
+        path.write_text(content, encoding="utf-8")
+
+    def _find_chapter_path(self, slug: str) -> Optional[Path]:
+        chapters_dir = self._resources_dir / settings.chapters_dirname
+        if not chapters_dir.exists():
+            return None
+        for path in chapters_dir.glob("*.md"):
+            content = path.read_text(encoding="utf-8")
+            front_matter = parse(content)
+            if front_matter.attributes.get("slug") == slug:
+                return path
+        return None
+
+    def _find_question_path(self, chapter: str, slug: str) -> Optional[Path]:
+        questions_dir = self._resources_dir / settings.questions_dirname / chapter
+        if not questions_dir.exists():
+            return None
+        for path in questions_dir.glob("*.md"):
+            content = path.read_text(encoding="utf-8")
+            front_matter = parse(content)
+            if front_matter.attributes.get("slug") == slug:
+                return path
+        return None
+
+    @staticmethod
+    def _format_memory(value: int) -> str:
+        if value % (1024 * 1024) == 0:
+            return f"{value // (1024 * 1024)}MB"
+        if value % 1024 == 0:
+            return f"{value // 1024}KB"
+        return str(value)
+
+    def _reset_cache(self) -> None:
+        self._chapters_cache.clear()
+        self._questions_cache.clear()
 
 
 content_service = ContentService()

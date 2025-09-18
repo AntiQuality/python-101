@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .core.config import settings
-from .routes import admin, auth, content, judge, progress
+from .routes import admin, auth, content, judge, progress, execute
 
 app = FastAPI(title=settings.project_name)
 
@@ -18,6 +18,7 @@ app.include_router(auth.router)
 app.include_router(content.router)
 app.include_router(progress.router)
 app.include_router(judge.router)
+app.include_router(execute.router)
 app.include_router(admin.router)
 
 

@@ -4,6 +4,11 @@
   gap: 1.5rem;
 }
 
+.admin__message {
+  color: #5f3dc4;
+  margin: 0;
+}
+
 .admin__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -17,6 +22,9 @@
   padding: 1.5rem;
   max-height: 420px;
   overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
 }
 
 .admin__card ul {
@@ -39,6 +47,74 @@
 .admin__card li:last-child {
   border-bottom: none;
   padding-bottom: 0;
+}
+
+.admin__forms {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 960px) {
+  .admin__forms {
+    grid-template-columns: repeat(2, minmax(320px, 1fr));
+  }
+}
+
+.admin__form {
+  border: 1px solid #e5e7f2;
+  border-radius: 12px;
+  padding: 1.2rem 1.4rem;
+  background: #fff;
+  display: grid;
+  gap: 1rem;
+}
+
+.admin__form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  font-weight: 600;
+}
+
+.admin__form input,
+.admin__form textarea,
+.admin__form select {
+  border: 1px solid #c6c9dd;
+  border-radius: 8px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.admin__form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.admin__form button {
+  justify-self: flex-start;
+  padding: 0.55rem 1.2rem;
+  border-radius: 8px;
+  border: none;
+  background: #7b5bff;
+  color: #fff;
+  cursor: pointer;
+}
+
+.admin__form button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.admin__checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 500;
+}
+
+.admin__checkbox input {
+  width: auto;
 }
 
 .admin__note {
