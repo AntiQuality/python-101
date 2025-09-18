@@ -1,4 +1,5 @@
 ---
+title: 变量类型选择
 slug: q1-variable
 chapter: intro
 difficulty: 基础

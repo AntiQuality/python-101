@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { useModal } from "../contexts/ModalContext";
 import { removeDevice } from "../services/api";
 import "../styles/progress.css";
 
 const Progress: React.FC = () => {
   const { user, setUser } = useAuth();
-  const [message, setMessage] = useState<string | null>(null);
+  const { openModal } = useModal();
   const [loadingDevice, setLoadingDevice] = useState<string | null>(null);
 
   if (!user) {
@@ -20,10 +21,10 @@ const Progress: React.FC = () => {
     try {
       const response = await removeDevice(user.username, deviceName, browser);
       setUser(response.data.user);
-      setMessage("设备已移除。");
+      openModal({ title: "设备已移除", content: <p>所选设备已成功删除。</p> });
     } catch (error: any) {
       const detail = error?.response?.data?.detail || error.message;
-      setMessage(`移除失败：${detail}`);
+      openModal({ title: "操作失败", content: <p>{detail}</p> });
     } finally {
       setLoadingDevice(null);
     }
@@ -32,8 +33,6 @@ const Progress: React.FC = () => {
   return (
     <section className="progress">
       <h2>学习记录</h2>
-      {message && <p className="progress__message">{message}</p>}
-
       <div className="progress__grid">
         <div className="progress__card">
           <h3>做题进度</h3>

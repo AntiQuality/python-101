@@ -1,4 +1,5 @@
 ---
+title: AQI 判断
 slug: q1-temperature
 chapter: conditionals
 difficulty: 进阶

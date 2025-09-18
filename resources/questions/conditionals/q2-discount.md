@@ -1,4 +1,5 @@
 ---
+title: 满减计算
 slug: q2-discount
 chapter: conditionals
 difficulty: 基础

@@ -1,4 +1,5 @@
 ---
+title: 求和练习
 slug: q1-sum-range
 chapter: loops
 difficulty: 基础

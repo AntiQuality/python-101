@@ -1,4 +1,5 @@
 ---
+title: 问候语输出
 slug: q2-simple-input
 chapter: intro
 difficulty: 基础

@@ -1,4 +1,5 @@
 ---
+title: 影院票价
 slug: q5-ticket
 chapter: conditionals
 difficulty: 挑战

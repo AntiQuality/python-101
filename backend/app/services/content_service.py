@@ -82,6 +82,7 @@ class ContentService:
         chapter: str,
         difficulty: str,
         qtype: str,
+        title: Optional[str],
         memory_limit: Optional[int],
         show_in_tutorial: bool,
         show_in_bank: bool,
@@ -104,6 +105,8 @@ class ContentService:
         }
         if memory_limit:
             meta["memory_limit"] = self._format_memory(memory_limit)
+        if title:
+            meta["title"] = title
 
         sections: List[str] = [f"## 题目正文\n{prompt.strip()}"]
         if answer:
@@ -173,6 +176,7 @@ class ContentService:
             chapter=attributes["chapter"],
             difficulty=attributes["difficulty"],
             type=attributes["type"],
+            title=attributes.get("title"),
             memory_limit=self._parse_memory(attributes.get("memory_limit")),
             show_in_tutorial=bool(attributes.get("show_in_tutorial", True)),
             show_in_bank=bool(attributes.get("show_in_bank", True)),

@@ -1,0 +1,129 @@
+.user-menu {
+  position: absolute;
+  top: 56px;
+  right: 32px;
+  width: 340px;
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #e1e3f7;
+  box-shadow: 0 30px 70px -40px rgba(35, 32, 74, 0.6);
+  padding: 1.4rem 1.5rem;
+  display: grid;
+  gap: 1.2rem;
+  z-index: 20;
+}
+
+.user-menu__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-menu__header h4 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.user-menu__header span {
+  color: #7c80a6;
+  font-size: 0.9rem;
+}
+
+.user-menu__header button {
+  border: none;
+  background: linear-gradient(135deg, #ff6b6b, #ff4949);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+}
+
+.user-menu__section h5 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.user-menu__links {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.user-menu__links button {
+  flex: 1;
+  border: none;
+  border-radius: 12px;
+  background: #f6f7ff;
+  padding: 0.55rem 0.6rem;
+  font-weight: 600;
+  color: #574fcc;
+  cursor: pointer;
+}
+
+.user-menu__hint {
+  margin: 0 0 0.4rem;
+  color: #7c80a6;
+  font-size: 0.85rem;
+}
+
+.user-menu__section ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.user-menu__device {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.9rem;
+  border: 1px solid #edf0ff;
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem;
+  background: #f9faff;
+}
+
+.user-menu__device--current {
+  border-color: rgba(123, 91, 255, 0.4);
+  background: rgba(123, 91, 255, 0.12);
+}
+
+.user-menu__device-remove {
+  border: none;
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  background: linear-gradient(135deg, #ff6b6b, #ff4949);
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.user-menu__device-remove--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #c7c9d9;
+}
+
+.user-menu__device-name {
+  font-weight: 600;
+}
+
+.user-menu__device-browser,
+.user-menu__device-login {
+  display: block;
+  color: #7c80a6;
+  font-size: 0.82rem;
+}
+
+.user-menu__empty {
+  text-align: center;
+  color: #7c80a6;
+  padding: 0.8rem 0;
+}
+
+.user-menu__tip {
+  margin: 0;
+  color: #7c80a6;
+  font-size: 0.82rem;
+}

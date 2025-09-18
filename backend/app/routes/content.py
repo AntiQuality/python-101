@@ -62,6 +62,7 @@ def _question_out(question) -> QuestionOut:
         chapter=question.meta.chapter,
         difficulty=question.meta.difficulty,
         type=question.meta.type,
+        title=question.meta.title,
         memory_limit=question.meta.memory_limit,
         show_in_tutorial=question.meta.show_in_tutorial,
         show_in_bank=question.meta.show_in_bank,

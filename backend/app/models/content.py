@@ -20,6 +20,7 @@ class QuestionMetadata(BaseModel):
     chapter: str
     difficulty: str
     type: str
+    title: Optional[str] = None
     memory_limit: Optional[int] = Field(default=None, description="Bytes")
     show_in_tutorial: bool = True
     show_in_bank: bool = True

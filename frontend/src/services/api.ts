@@ -37,6 +37,7 @@ export interface Question {
   chapter: string;
   difficulty: string;
   type: string;
+  title?: string | null;
   memory_limit?: number | null;
   show_in_tutorial: boolean;
   show_in_bank: boolean;
@@ -52,6 +53,7 @@ export interface QuestionOut {
   chapter: string;
   difficulty: string;
   type: string;
+  title?: string | null;
   memory_limit?: number | null;
   show_in_tutorial: boolean;
   show_in_bank: boolean;
@@ -75,6 +77,7 @@ export interface QuestionUpsertPayload {
   chapter: string;
   difficulty: string;
   type: string;
+  title?: string | null;
   memory_limit?: number | null;
   show_in_tutorial?: boolean;
   show_in_bank?: boolean;

@@ -29,6 +29,7 @@ const defaultQuestionForm: QuestionUpsertPayload = {
   chapter: "",
   difficulty: "基础",
   type: "单选题",
+  title: "",
   memory_limit: undefined,
   show_in_tutorial: true,
   show_in_bank: true,
@@ -111,6 +112,7 @@ const AdminDashboard: React.FC = () => {
     try {
       const payload: QuestionUpsertPayload = {
         ...questionForm,
+        title: questionForm.title || undefined,
         memory_limit: memoryInMB ? Number(memoryInMB) * 1024 * 1024 : undefined,
         show_in_tutorial: questionForm.show_in_tutorial ?? true,
         show_in_bank: questionForm.show_in_bank ?? true,
@@ -163,7 +165,7 @@ const AdminDashboard: React.FC = () => {
           <ul>
             {questions.map((question) => (
               <li key={question.slug}>
-                <strong>{question.prompt.split("\n")[0]}</strong>
+                <strong>{question.title ?? question.prompt.split("\n")[0]}</strong>
                 <span>
                   {question.chapter} · {question.difficulty} · {question.type}
                 </span>
@@ -265,6 +267,13 @@ const AdminDashboard: React.FC = () => {
               <option value="进阶">进阶</option>
               <option value="挑战">挑战</option>
             </select>
+          </label>
+          <label>
+            简称（可选）
+            <input
+              value={questionForm.title ?? ""}
+              onChange={(event) => setQuestionForm((prev) => ({ ...prev, title: event.target.value }))}
+            />
           </label>
           <label>
             题型

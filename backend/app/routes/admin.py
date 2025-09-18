@@ -61,6 +61,7 @@ def upsert_question(payload: QuestionUpsertRequest, service: ContentService = De
         chapter=payload.chapter,
         difficulty=payload.difficulty,
         qtype=payload.type,
+        title=payload.title,
         memory_limit=payload.memory_limit,
         show_in_tutorial=payload.show_in_tutorial,
         show_in_bank=payload.show_in_bank,

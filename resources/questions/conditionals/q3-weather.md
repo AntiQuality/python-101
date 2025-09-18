@@ -1,4 +1,5 @@
 ---
+title: 空气提示
 slug: q3-weather
 chapter: conditionals
 difficulty: 进阶

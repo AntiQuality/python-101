@@ -1,4 +1,5 @@
 ---
+title: 平均分计算
 slug: q5-average
 chapter: loops
 difficulty: 挑战

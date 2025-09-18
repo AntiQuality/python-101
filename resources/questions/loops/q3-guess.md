@@ -1,4 +1,5 @@
 ---
+title: 猜数字
 slug: q3-guess
 chapter: loops
 difficulty: 进阶

@@ -88,6 +88,7 @@ class QuestionOut(BaseModel):
     chapter: str
     difficulty: str
     type: str
+    title: str | None = None
     memory_limit: int | None = None
     show_in_tutorial: bool
     show_in_bank: bool
@@ -111,6 +112,7 @@ class QuestionUpsertRequest(BaseModel):
     chapter: str
     difficulty: str
     type: str
+    title: str | None = None
     memory_limit: int | None = None
     show_in_tutorial: bool = True
     show_in_bank: bool = True

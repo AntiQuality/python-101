@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { login, register } from "../services/api";
+import { useModal } from "../contexts/ModalContext";
 import "../styles/login.css";
 
 const getDeviceInfo = () => {
@@ -13,21 +14,20 @@ const getDeviceInfo = () => {
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { setUser } = useAuth();
+  const { openModal } = useModal();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
-    setMessage(null);
     try {
       if (mode === "register") {
         const res = await register(username, password);
         setUser(res.data.user);
-        setMessage("注册成功，已自动登录！");
+        navigate("/tutorial");
       } else {
         const { deviceName, browser } = getDeviceInfo();
         const res = await login(username, password, deviceName, browser);
@@ -36,7 +36,7 @@ const Login: React.FC = () => {
       }
     } catch (error: any) {
       const detail = error?.response?.data?.detail || error.message;
-      setMessage(`操作失败：${detail}`);
+      openModal({ title: "操作失败", content: <p>{detail}</p> });
     } finally {
       setLoading(false);
     }
@@ -71,7 +71,6 @@ const Login: React.FC = () => {
         >
           {mode === "login" ? "还没有账号？立即注册" : "已有账号？前往登录"}
         </button>
-        {message && <p className="login__message">{message}</p>}
       </div>
     </section>
   );

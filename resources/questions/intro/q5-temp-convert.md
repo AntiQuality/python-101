@@ -1,4 +1,5 @@
 ---
+title: 温度换算
 slug: q5-temp-convert
 chapter: intro
 difficulty: 挑战

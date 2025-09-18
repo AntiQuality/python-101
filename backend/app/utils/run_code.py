@@ -41,11 +41,25 @@ def _set_limits(time_limit: float, memory_limit: int | None) -> None:
 
     if memory_limit:
         limit = max(memory_limit, 4 * 1024 * 1024)
-        resource.setrlimit(resource.RLIMIT_AS, (limit, limit))
-        resource.setrlimit(resource.RLIMIT_DATA, (limit, limit))
+        _apply_limit(resource.RLIMIT_AS, limit)
+        _apply_limit(resource.RLIMIT_DATA, limit)
 
     resource.setrlimit(resource.RLIMIT_FSIZE, (1024 * 1024, 1024 * 1024))
     resource.setrlimit(resource.RLIMIT_NOFILE, (32, 32))
+
+
+def _apply_limit(resource_name: int, value: int) -> None:
+    current_soft, current_hard = resource.getrlimit(resource_name)
+    hard = current_hard
+    if hard == resource.RLIM_INFINITY:
+        hard = value
+    else:
+        hard = min(hard, value)
+    soft = min(value, hard)
+    try:
+        resource.setrlimit(resource_name, (soft, hard))
+    except (ValueError, OSError):
+        resource.setrlimit(resource_name, (soft, current_hard))
 
 
 def main() -> None:

@@ -31,6 +31,7 @@
   position: sticky;
   top: 0;
   z-index: 8;
+  position: relative;
 }
 
 .layout__nav a {
@@ -71,4 +72,33 @@
   padding: 1.2rem;
   font-size: 0.9rem;
   color: #6c757d;
+}
+
+.layout__user-menu {
+  margin-left: auto;
+  position: relative;
+}
+
+.layout__user-button {
+  border: none;
+  background: linear-gradient(135deg, #7b5bff, #6a4bff);
+  color: #fff;
+  padding: 0.45rem 1.1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 12px 24px -18px rgba(123, 91, 255, 0.7);
+}
+
+.layout__user-button:hover {
+  transform: translateY(-1px);
+}
+
+.layout__login-link {
+  margin-left: auto;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(123, 91, 255, 0.12);
+  color: #5c31ff;
+  font-weight: 600;
 }

@@ -1,4 +1,5 @@
 ---
+title: 价格类型转换
 slug: q4-type-conversion
 chapter: intro
 difficulty: 进阶

@@ -1,4 +1,5 @@
 ---
+title: 变量命名判定
 slug: q3-var-name
 chapter: intro
 difficulty: 基础
